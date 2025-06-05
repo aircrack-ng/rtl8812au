@@ -12788,6 +12788,13 @@ static int rtw_ioctl_wext_private(struct net_device *dev, struct ifreq *rq)
 #endif /* CONFIG_WIRELESS_EXT */
 #endif /* also CONFIG_WIRELESS_EXT */
 
+#if defined(CONFIG_P2P) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+int rtw_siocdevprivate(struct net_device *dev, struct ifreq *ifr, void __user *data, int cmd)
+{
+    return rtw_ioctl(dev, ifr, cmd);
+}
+#endif
+
 int rtw_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 {
 	struct iwreq *wrq = (struct iwreq *)rq;

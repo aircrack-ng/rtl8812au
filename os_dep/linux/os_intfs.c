@@ -2827,6 +2827,9 @@ static const struct net_device_ops rtw_netdev_vir_if_ops = {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
 	.ndo_select_queue	= rtw_select_queue,
 #endif
+#if defined(CONFIG_P2P) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+	.ndo_siocdevprivate = rtw_siocdevprivate,
+#endif
 };
 #endif
 
