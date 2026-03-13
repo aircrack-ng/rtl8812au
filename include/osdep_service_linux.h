@@ -54,6 +54,7 @@
 #include <linux/rtnetlink.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>	/* for struct tasklet_struct */
+#include <linux/timer.h>
 #include <linux/ip.h>
 #include <linux/kthread.h>
 #include <linux/list.h>
@@ -61,6 +62,15 @@
 
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 5, 41))
 	#include <linux/tqueue.h>
+#endif
+
+/* Kernel 6.18+ removed from_timer/del_timer_sync; keep compatibility */
+#ifndef from_timer
+#define from_timer(var, callback_timer, timer_fieldname) \
+	timer_container_of(var, callback_timer, timer_fieldname)
+#endif
+#ifndef del_timer_sync
+#define del_timer_sync timer_delete_sync
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0))
