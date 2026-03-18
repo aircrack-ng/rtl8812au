@@ -1662,6 +1662,7 @@ ifneq ($(KERNELRELEASE),)
 
 ########### this part for *.mk ############################
 include $(src)/hal/phydm/phydm.mk
+ccflags-y += $(EXTRA_CFLAGS)
 
 rtk_core :=	core/rtw_cmd.o \
 		core/rtw_security.o \
