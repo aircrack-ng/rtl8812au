@@ -23,6 +23,28 @@ EXTRA_CFLAGS += -I$(src)/include -I$(srctree)/$(src)/include
 EXTRA_CFLAGS += -I$(src)/hal/phydm -I$(srctree)/$(src)/hal/phydm
 EXTRA_LDFLAGS += --strip-debug -O3
 
+RTW_SRC := $(if $(M),$(M),$(PWD))
+
+EXTRA_CFLAGS += -I$(RTW_SRC)/include
+EXTRA_CFLAGS += -I$(RTW_SRC)/hal
+EXTRA_CFLAGS += -I$(RTW_SRC)/hal/phydm
+EXTRA_CFLAGS += -I$(RTW_SRC)/os_dep
+EXTRA_CFLAGS += -I$(RTW_SRC)/platform
+EXTRA_CFLAGS += -I$(PWD)/include -I$(PWD)/hal -I$(PWD)/os_dep -I$(PWD)/platform
+
+ccflags-y += -I$(src)/include
+ccflags-y += -I$(src)/hal
+ccflags-y += -I$(src)/hal/phydm
+ccflags-y += -I$(src)/os_dep
+ccflags-y += -I$(src)/platform
+ccflags-y += -I$(RTW_SRC)/include
+ccflags-y += -I$(RTW_SRC)/hal
+ccflags-y += -I$(RTW_SRC)/hal/phydm
+ccflags-y += -I$(RTW_SRC)/os_dep
+ccflags-y += -I$(RTW_SRC)/platform
+
+
+
 ########################## WIFI IC ############################
 CONFIG_RTL8812A = y
 CONFIG_RTL8821A = y
