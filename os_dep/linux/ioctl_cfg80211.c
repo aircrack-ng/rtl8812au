@@ -1196,8 +1196,23 @@ check_bss:
 
 		if (check_fwstate(pmlmepriv, WIFI_MONITOR_STATE) != _TRUE) {
                         struct cfg80211_bss *bss;
-                        bss = cfg80211_get_bss(pwdev->wiphy, NULL, cur_network->network.MacAddress, NULL, 0,
+                        struct ieee80211_channel *chan = NULL;
+                        u32 freq = rtw_ch2freq(cur_network->network.Configuration.DSConfig);
+                        chan = ieee80211_get_channel(pwdev->wiphy, freq);
+
+                        /* Prefer exact (BSSID, SSID) match */
+                        bss = cfg80211_get_bss(pwdev->wiphy, chan,
+                                cur_network->network.MacAddress,
+                                cur_network->network.Ssid.Ssid,
+                                cur_network->network.Ssid.SsidLength,
                                 IEEE80211_BSS_TYPE_ANY, IEEE80211_PRIVACY_ANY);
+
+                        /* Fallback (rare): if not found, try wildcard as before */
+                        if (!bss) {
+                                bss = cfg80211_get_bss(pwdev->wiphy, chan,
+                                        cur_network->network.MacAddress, NULL, 0,
+                                        IEEE80211_BSS_TYPE_ANY, IEEE80211_PRIVACY_ANY);
+                        }
 		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0) || defined(CONFIG_CFG80211_CONNECT_BSS_ANDROID))
                         cfg80211_connect_bss(wdev_to_ndev(pwdev), cur_network->network.MacAddress, bss
                                 , pmlmepriv->assoc_req + sizeof(struct rtw_ieee80211_hdr_3addr) + 2
