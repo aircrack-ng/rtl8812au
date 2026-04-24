@@ -24,12 +24,37 @@
 #define RTL871X_MODULE_NAME "8812AU"
 
 /*
+ * 本驱动为 USB 接口（CONFIG_USB_HCI）。其它 Realtek in-tree 驱动
+ * （rtl8192cd / g6_wifi_driver 等）在 .config 中打开了 CONFIG_PCI_HCI，
+ * 会经由 include/generated/autoconf.h 全局泄漏进来，导致 rtw_xmit.h /
+ * hal_data.h 中同一结构体在 USB 分支与 PCI 分支同时展开，产生重复成员
+ * （xmit_tasklet / IntArray / IntrMask）以及 TXDESC_OFFSET 重定义。
+ * 在此处（所有 .c 最早包含的头之一）集中清理一次。
+ *
+ * 注意：不能只在 Makefile 里 -UCONFIG_PCI_HCI，因为 GCC 规则是
+ *       -include 总在所有 -D/-U 之后处理，autoconf.h 会把宏又定义回来。
+ */
+#undef CONFIG_PCI_HCI
+#undef CONFIG_SDIO_HCI
+#undef CONFIG_GSPI_HCI
+
+/*
+ * 同样来自 g6_wifi_driver / rtl8192cd 的 Kconfig 泄漏，本驱动 Makefile
+ * 已将其关闭（= n），但全局 autoconf.h 会重新定义回来，导致 rtl8812au
+ * 编译出 rtw_vendor_ie_get_api 等 EXPORT_SYMBOL 与 rtk_wifi6 重复，
+ * insmod 时报 "exports duplicate symbol"。
+ */
+#undef CONFIG_APPEND_VENDOR_IE_ENABLE
+
+/*
 #ifndef DRV_NAME
 #define DRV_NAME "rtl8812au"
 #endif
 */
 
+#ifndef CONFIG_USB_HCI
 #define CONFIG_USB_HCI
+#endif
 
 #define PLATFORM_LINUX
 
