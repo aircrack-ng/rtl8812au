@@ -10,3 +10,4 @@ modules.order
 *.mod
 *.o.d
 *.c.orig 
+make.log
