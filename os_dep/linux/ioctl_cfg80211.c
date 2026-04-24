@@ -6356,15 +6356,34 @@ static int cfg80211_rtw_set_monitor_channel(struct wiphy *wiphy
 		break;
 	case NL80211_CHAN_WIDTH_80:
 		target_width = CHANNEL_WIDTH_80;
-		target_offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
+		/*
+		 * 对于 80/160MHz，set_channel_bwmode() 在内部会用
+		 * rtw_get_scch_by_cch_offset(cch_40, CHANNEL_WIDTH_40, target_offset)
+		 * 去推导 primary 20MHz 的中心，因此此处 target_offset 必须是
+		 * primary-20-in-40 的方位（LOWER/UPPER），而不是 DONT_CARE。
+		 * 否则会在 rtw_rf.c:225 触发 WARN。
+		 */
+		{
+			u8 off = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
+			rtw_get_offset_by_chbw(chan->hw_value, CHANNEL_WIDTH_40, &off);
+			target_offset = off;
+		}
 		break;
 	case NL80211_CHAN_WIDTH_80P80:
 		target_width = CHANNEL_WIDTH_80_80;
-		target_offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
+		{
+			u8 off = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
+			rtw_get_offset_by_chbw(chan->hw_value, CHANNEL_WIDTH_40, &off);
+			target_offset = off;
+		}
 		break;
 	case NL80211_CHAN_WIDTH_160:
 		target_width = CHANNEL_WIDTH_160;
-		target_offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
+		{
+			u8 off = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
+			rtw_get_offset_by_chbw(chan->hw_value, CHANNEL_WIDTH_40, &off);
+			target_offset = off;
+		}
 		break;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0))
