@@ -1,5 +1,16 @@
 EXTRA_CFLAGS += $(USER_EXTRA_CFLAGS) -fno-pie
 EXTRA_CFLAGS += -O3
+
+# -------------------------------------------------------------------
+# 隔离其它 Realtek in-tree 驱动（rtl8192cd / g6_wifi_driver 等）通过
+# include/generated/autoconf.h 全局泄漏进来的 HCI 相关宏，否则会和
+# 本驱动的 CONFIG_USB_HCI 同时生效，导致 rtw_xmit.h / hal_data.h 中
+# 结构体成员重复（xmit_tasklet / IntArray / IntrMask）、TXDESC_OFFSET
+# 重定义等一连串编译错误。
+# -------------------------------------------------------------------
+EXTRA_CFLAGS += -DCONFIG_USB_HCI
+EXTRA_CFLAGS += -UCONFIG_PCI_HCI -UCONFIG_SDIO_HCI -UCONFIG_GSPI_HCI
+
 EXTRA_CFLAGS += -Wno-unused-variable
 #EXTRA_CFLAGS += -Wno-unused-value
 EXTRA_CFLAGS += -Wno-unused-label
@@ -97,7 +108,8 @@ CONFIG_RTW_SDIO_PM_KEEP_POWER = y
 ###################### MP HW TX MODE FOR VHT #######################
 CONFIG_MP_VHT_HW_TX_MODE = n
 ###################### Platform Related #######################
-CONFIG_PLATFORM_I386_PC = y
+CONFIG_PLATFORM_RTK9607C = y
+CONFIG_PLATFORM_I386_PC = n
 CONFIG_PLATFORM_ANDROID_ARM64 = n
 CONFIG_PLATFORM_ARM_RPI = n
 CONFIG_PLATFORM_ARM64_RPI = n
@@ -654,6 +666,34 @@ EXTRA_CFLAGS += -DDM_ODM_SUPPORT_TYPE=0x04
 ifeq ($(CONFIG_RTW_VIRTUAL_INTF), y)
 EXTRA_CFLAGS += -DRTW_VIRTUAL_INTF=1
 endif
+
+###############################################################################
+# Realtek RTK9607C (MIPS, big-endian, in-tree build inside SDK kernel)
+#
+# 只需要向编译器追加宏开关即可，ARCH / CROSS_COMPILE / KSRC 等由顶层
+# SDK Makefile(`make linux_only`) 传入，不要在此处再设置，否则一旦切到
+# out-of-tree 构建会被覆盖/污染（尤其不要在 := 赋值行尾混中文注释）。
+#
+#   -DCONFIG_IOCTL_CFG80211      启用 cfg80211 路径（iw / nl80211 必需）
+#   -DRTW_USE_CFG80211_STA_EVENT 通过 cfg80211 上报 STA 事件
+#   -DCONFIG_BIG_ENDIAN          MIPS EB 必需，影响 desc/寄存器字段序
+#   -DCONFIG_PLATFORM_RTK_9607C  选中 9607C 平台特殊初始化
+###############################################################################
+ifeq ($(CONFIG_PLATFORM_RTK9607C), y)
+EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+EXTRA_CFLAGS += -DCONFIG_BIG_ENDIAN -DCONFIG_PLATFORM_RTK_9607C
+
+# 以下变量仅用于 out-of-tree 构建（`make -C $(KSRC) M=...` / `make install`），
+# in-tree 构建时会被顶层 kbuild 忽略。留在这里方便独立编译调试，不影响 SDK 流程。
+ARCH           ?= mips
+CROSS_COMPILE  ?= /share/rlx/msdk-10.3.0-mips-EB-5.10-g2.30-m32s-210630/bin/msdk-linux-
+KSRC           ?= /mnt/nvme0n1p3/huangyongjin/hyjpdd1/sdk_0225/linux-5.10.x
+KVER           ?= 5.10.70
+MODDESTDIR     ?= /lib/modules/$(KVER)/kernel/drivers/net/wireless/realtek
+STAGINGMODDIR  ?= /lib/modules/$(KVER)/kernel/drivers/staging
+INSTALL_PREFIX ?=
+endif
+
 
 ifeq ($(CONFIG_PLATFORM_I386_PC), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
