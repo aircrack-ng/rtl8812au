@@ -5750,6 +5750,7 @@ bool rtw_xmit_ac_blocked(_adapter *adapter)
 	struct dvobj_priv *dvobj = adapter_to_dvobj(adapter);
 	struct rf_ctl_t *rfctl = adapter_to_rfctl(adapter);
 	_adapter *iface;
+	struct mlme_priv *mlme;
 	struct mlme_ext_priv *mlmeext;
 	bool blocked = _FALSE;
 	int i;
@@ -5775,17 +5776,23 @@ bool rtw_xmit_ac_blocked(_adapter *adapter)
 
 	for (i = 0; i < dvobj->iface_nums; i++) {
 		iface = dvobj->padapters[i];
+		mlme = &iface->mlmepriv;
 		mlmeext = &iface->mlmeextpriv;
 
-		/* check scan state */
-		if (mlmeext_scan_state(mlmeext) != SCAN_DISABLE
+		/* check scan state — gated by _FW_UNDER_SURVEY to avoid permanent
+		 * TX stall when rtw_scan_timeout_handler clears the upper flag but
+		 * mlmeext->scan_state stays stuck in SCAN_PROCESS (race when scan
+		 * never reaches SCAN_COMPLETE handler that resets scan_state). */
+		if (check_fwstate(mlme, _FW_UNDER_SURVEY)
+			&& mlmeext_scan_state(mlmeext) != SCAN_DISABLE
 			&& mlmeext_scan_state(mlmeext) != SCAN_BACK_OP
 		) {
 			blocked = _TRUE;
 			goto exit;
 		}
 
-		if (mlmeext_scan_state(mlmeext) == SCAN_BACK_OP
+		if (check_fwstate(mlme, _FW_UNDER_SURVEY)
+			&& mlmeext_scan_state(mlmeext) == SCAN_BACK_OP
 			&& !mlmeext_chk_scan_backop_flags(mlmeext, SS_BACKOP_TX_RESUME)
 		) {
 			blocked = _TRUE;
