@@ -47,6 +47,8 @@ int rtw_mp_write_reg(struct net_device *dev,
 
 	_rtw_memset(input, 0, sizeof(input));
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -263,6 +265,8 @@ int rtw_mp_write_rf(struct net_device *dev,
 	PADAPTER padapter = rtw_netdev_priv(dev);
 	char input[wrqu->length];
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	_rtw_memset(input, 0, wrqu->length);
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
@@ -406,6 +410,8 @@ int rtw_mp_rate(struct net_device *dev,
 	PMPT_CONTEXT		pMptCtx = &(padapter->mppriv.mpt_ctx);
 
 	_rtw_memset(input, 0, sizeof(input));
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -454,6 +460,8 @@ int rtw_mp_channel(struct net_device *dev,
 	u32	channel = 1;
 
 	_rtw_memset(input, 0, sizeof(input));
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -480,6 +488,8 @@ int rtw_mp_ch_offset(struct net_device *dev,
 	u32	ch_offset = 0;
 
 	_rtw_memset(input, 0, sizeof(input));
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -504,6 +514,8 @@ int rtw_mp_bandwidth(struct net_device *dev,
 	HAL_DATA_TYPE	*pHalData	= GET_HAL_DATA(padapter);
 	u8		input[wrqu->length];
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -584,6 +596,8 @@ int rtw_mp_txpower(struct net_device *dev,
 	PADAPTER padapter = rtw_netdev_priv(dev);
 	PMPT_CONTEXT		pMptCtx = &(padapter->mppriv.mpt_ctx);
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -622,6 +636,8 @@ int rtw_mp_ant_tx(struct net_device *dev,
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
 	_rtw_memset(input, 0, sizeof(input));
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -668,6 +684,8 @@ int rtw_mp_ant_rx(struct net_device *dev,
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
 	_rtw_memset(input, 0, sizeof(input));
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -882,6 +900,8 @@ int rtw_mp_arx(struct net_device *dev,
 	struct mp_priv *pmppriv = &padapter->mppriv;
 	struct dbg_rx_counter rx_counter;
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1060,6 +1080,8 @@ int rtw_mp_pwrtrk(struct net_device *dev,
 	PADAPTER padapter = rtw_netdev_priv(dev);
 	u8		input[wrqu->length];
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1097,6 +1119,8 @@ int rtw_mp_psd(struct net_device *dev,
 	u8		input[wrqu->length + 1];
 
 	_rtw_memset(input, 0, sizeof(input));
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1187,6 +1211,8 @@ int rtw_mp_dump(struct net_device *dev,
 
 	pmp_priv = &padapter->mppriv;
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1208,6 +1234,8 @@ int rtw_mp_phypara(struct net_device *dev,
 	char	input[wrqu->length];
 	u32		valxcap, ret;
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1238,6 +1266,8 @@ int rtw_mp_SetRFPath(struct net_device *dev,
 
 	RTW_INFO("%s:iwpriv in=%s\n", __func__, input);
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1284,6 +1314,8 @@ int rtw_mp_switch_rf_path(struct net_device *dev,
 	int		bwlg = 1, bwla = 1, btg = 1, bbt=1;
 	u8 ret = 0;
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
@@ -1359,6 +1391,8 @@ int rtw_mp_PwrCtlDM(struct net_device *dev,
 	u8		input[wrqu->length];
 	int		bstart = 1;
 
+	if (wrqu->length > 128)
+		return -EFAULT;
 	if (copy_from_user(input, wrqu->pointer, wrqu->length))
 		return -EFAULT;
 
