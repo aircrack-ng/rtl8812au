@@ -2169,7 +2169,15 @@ u8 *rtw_get_p2p_attr_content(u8 *p2p_ie, uint p2p_ielen, u8 target_attr_id , u8 
 
 	attr_ptr = rtw_get_p2p_attr(p2p_ie, p2p_ielen, target_attr_id, NULL, &attr_len);
 
-	if (attr_ptr && attr_len) {
+	/* attr_len includes the 3-byte attribute header (1 ID + 2 length).
+	 * A malformed frame can yield attr_len < 3 (e.g. via u16 overflow in
+	 * rtw_get_p2p_attr where attr_len = attr_data_len + 3 wraps when
+	 * attr_data_len >= 0xFFFD). Without this guard, (attr_len - 3)
+	 * underflows in u32 and the subsequent _rtw_memcpy() copies a huge
+	 * length into buf_content -- which several callers pass as a
+	 * fixed-size stack buffer (e.g. groupid[38], dev_addr[ETH_ALEN]).
+	 */
+	if (attr_ptr && attr_len >= 3) {
 		if (buf_content)
 			_rtw_memcpy(buf_content, attr_ptr + 3, attr_len - 3);
 
@@ -2513,7 +2521,13 @@ u8 *rtw_get_wfd_attr_content(u8 *wfd_ie, uint wfd_ielen, u8 target_attr_id, u8 *
 
 	attr_ptr = rtw_get_wfd_attr(wfd_ie, wfd_ielen, target_attr_id, NULL, &attr_len);
 
-	if (attr_ptr && attr_len) {
+	/* Same underflow guard as rtw_get_p2p_attr_content() above: attr_len
+	 * carries the 3-byte WFD attribute header; a malformed frame can
+	 * yield attr_len < 3 (parser's u16 (attr_data_len + 3) wraps when
+	 * attr_data_len >= 0xFFFD). Without the >= 3 check, (attr_len - 3)
+	 * underflows in u32 and the memcpy() copies a huge length.
+	 */
+	if (attr_ptr && attr_len >= 3) {
 		if (buf_content)
 			_rtw_memcpy(buf_content, attr_ptr + 3, attr_len - 3);
 
