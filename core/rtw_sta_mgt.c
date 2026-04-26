@@ -749,6 +749,18 @@ u32	rtw_free_stainfo(_adapter *padapter , struct sta_info *psta)
 
 	}
 
+	/* Drain any fragments left in this STA's defragmentation queue.
+	 * Reassembly may have been incomplete (peer left mid-sequence, or
+	 * the AP roamed away with a 0..n-1 fragment buffered). Without this
+	 * drain the recv_frame slots stay attached to the freed sta_info
+	 * and leak from the adapter's free_recv_queue pool, eventually
+	 * exhausting it after enough disconnect cycles. The neighbouring
+	 * reordering_ctrl pending queues are already drained above; defrag_q
+	 * was the missing peer.
+	 */
+	rtw_free_recvframe_queue(&psta->sta_recvpriv.defrag_q,
+				 &padapter->recvpriv.free_recv_queue);
+
 	if (!((psta->state & WIFI_AP_STATE) || MacAddr_isBcst(psta->cmn.mac_addr)) && is_pre_link_sta == _FALSE)
 		rtw_hal_set_odm_var(padapter, HAL_ODM_STA_INFO, psta, _FALSE);
 
