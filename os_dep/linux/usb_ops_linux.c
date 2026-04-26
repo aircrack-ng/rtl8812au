@@ -650,6 +650,36 @@ u32 usb_write_port(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *wmem)
 		rtw_sctx_done_err(&pxmitbuf->sctx, RTW_SCTX_DONE_WRITE_PORT_ERR);
 		RTW_INFO("usb_write_port, status=%d\n", status);
 
+		/* Mirror the per-AC increment we did before submit. The
+		 * completion callback usb_write_port_complete() decrements on
+		 * each successful URB completion, but usb_submit_urb() returning
+		 * non-zero means the URB was *not* queued and the callback will
+		 * *not* run. Without this decrement, every submit failure
+		 * (transient USB errors, ENOMEM, ENODEV) permanently inflates
+		 * the per-AC queue counter, eventually tripping
+		 * rtw_os_need_stop_queue() -> netif_stop_subqueue() with no
+		 * matching wake -- a permanent TX stall recoverable only by
+		 * module reload.
+		 */
+		_enter_critical(&pxmitpriv->lock, &irqL);
+		switch (pxmitbuf->flags) {
+		case VO_QUEUE_INX:
+			pxmitpriv->voq_cnt--;
+			break;
+		case VI_QUEUE_INX:
+			pxmitpriv->viq_cnt--;
+			break;
+		case BE_QUEUE_INX:
+			pxmitpriv->beq_cnt--;
+			break;
+		case BK_QUEUE_INX:
+			pxmitpriv->bkq_cnt--;
+			break;
+		default:
+			break;
+		}
+		_exit_critical(&pxmitpriv->lock, &irqL);
+
 		switch (status) {
 		case -ENODEV:
 			rtw_set_drv_stopped(padapter);
