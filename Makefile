@@ -1658,6 +1658,9 @@ ifneq ($(USER_MODULE_NAME),)
 MODULE_NAME := $(USER_MODULE_NAME)
 endif
 
+ccflags-y += $(EXTRA_CFLAGS)
+ldflags-y += $(EXTRA_LDFLAGS)
+
 ifneq ($(KERNELRELEASE),)
 
 ########### this part for *.mk ############################
