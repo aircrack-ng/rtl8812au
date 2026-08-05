@@ -356,7 +356,11 @@ static inline void timer_hdl(unsigned long cntx)
 #endif
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0))
+	_timer *ptimer = timer_container_of(ptimer, in_timer, timer);
+	#else
 	_timer *ptimer = from_timer(ptimer, in_timer, timer);
+	#endif
 #else
 	_timer *ptimer = (_timer *)cntx;
 #endif
@@ -385,7 +389,11 @@ __inline static void _set_timer(_timer *ptimer, u32 delay_time)
 
 __inline static void _cancel_timer(_timer *ptimer, u8 *bcancelled)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0))
+	*bcancelled = timer_delete_sync(&ptimer->timer) == 1 ? 1 : 0;
+#else
 	*bcancelled = del_timer_sync(&ptimer->timer) == 1 ? 1 : 0;
+#endif
 }
 
 static inline void _init_workitem(_workitem *pwork, void *pfunc, void *cntx)
