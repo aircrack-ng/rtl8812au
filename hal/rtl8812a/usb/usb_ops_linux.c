@@ -207,7 +207,7 @@ _exit_recvbuf2recvframe:
 }
 
 
-void rtl8812au_xmit_tasklet(void *priv)
+void rtl8812au_xmit_tasklet(unsigned long priv)
 {
 	int ret = _FALSE;
 	_adapter *padapter = (_adapter *)priv;

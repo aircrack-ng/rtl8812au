@@ -2670,7 +2670,7 @@ exit:
 	return annc_cnt;
 }
 
-static void mpath_tx_tasklet_hdl(void *priv)
+static void mpath_tx_tasklet_hdl(unsigned long priv)
 {
 	_adapter *adapter = (_adapter *)priv;
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
