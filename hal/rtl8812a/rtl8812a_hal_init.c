@@ -4167,6 +4167,7 @@ static void hw_var_set_monitor(PADAPTER Adapter, u8 variable, u8 *val)
 
 		/* Append FCS */
 		rcr_bits |= RCR_APPFCS;
+		rcr_bits |= RCR_ACRC32 | RCR_AICV; // accept CRC/ICV-error frames (chip-level gate)
 #endif
 #if 0
 		/*
@@ -4181,6 +4182,8 @@ static void hw_var_set_monitor(PADAPTER Adapter, u8 variable, u8 *val)
 
 		/* Receive all data frames */
 		value_rxfltmap2 = 0xFFFF;
+		rtw_write16(Adapter, REG_RXFLTMAP0, value_rxfltmap2);
+		rtw_write16(Adapter, REG_RXFLTMAP1, value_rxfltmap2);
 		rtw_write16(Adapter, REG_RXFLTMAP2, value_rxfltmap2);
 
 #if 0
