@@ -14,6 +14,7 @@
  *****************************************************************************/
 #ifndef __OSDEP_LINUX_SERVICE_H_
 #define __OSDEP_LINUX_SERVICE_H_
+#include "compat_fixes.h"
 
 #include <linux/version.h>
 #ifndef RHEL_RELEASE_CODE
