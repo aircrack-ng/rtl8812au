@@ -4262,7 +4262,7 @@ static int rtw_p2p_get_wps_configmethod(struct net_device *dev,
 
 			wpsie = rtw_get_wps_ie_from_scan_queue(&pnetwork->network.IEs[0], pnetwork->network.IELength, NULL, &wpsie_len, pnetwork->network.Reserved[0]);
 			if (wpsie) {
-				rtw_get_wps_attr_content(wpsie, wpsie_len, WPS_ATTR_CONF_METHOD, (u8 *)&attr_content, &attr_contentlen);
+				rtw_get_wps_attr_content(wpsie, wpsie_len, WPS_ATTR_CONF_METHOD, (u8 *)&attr_content, &attr_contentlen, sizeof(attr_content));
 				if (attr_contentlen) {
 					attr_content = be16_to_cpu(attr_content);
 					sprintf(attr_content_str, "\n\nM=%.4d", attr_content);
@@ -4477,7 +4477,7 @@ static int rtw_p2p_get_device_type(struct net_device *dev,
 
 			wpsie = rtw_get_wps_ie_from_scan_queue(&pnetwork->network.IEs[0], pnetwork->network.IELength, NULL, &wpsie_len, pnetwork->network.Reserved[0]);
 			if (wpsie) {
-				rtw_get_wps_attr_content(wpsie, wpsie_len, WPS_ATTR_PRIMARY_DEV_TYPE, dev_type, &dev_type_len);
+				rtw_get_wps_attr_content(wpsie, wpsie_len, WPS_ATTR_PRIMARY_DEV_TYPE, dev_type, &dev_type_len, sizeof(dev_type));
 				if (dev_type_len) {
 					u16	type = 0;
 
@@ -4551,7 +4551,7 @@ static int rtw_p2p_get_device_name(struct net_device *dev,
 
 			wpsie = rtw_get_wps_ie_from_scan_queue(&pnetwork->network.IEs[0], pnetwork->network.IELength, NULL, &wpsie_len, pnetwork->network.Reserved[0]);
 			if (wpsie) {
-				rtw_get_wps_attr_content(wpsie, wpsie_len, WPS_ATTR_DEVICE_NAME, dev_name, &dev_len);
+				rtw_get_wps_attr_content(wpsie, wpsie_len, WPS_ATTR_DEVICE_NAME, dev_name, &dev_len, sizeof(dev_name));
 				if (dev_len) {
 					sprintf(dev_name_str, "\n\nN=%s", dev_name);
 					blnMatch = 1;

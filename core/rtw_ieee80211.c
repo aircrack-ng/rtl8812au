@@ -1165,7 +1165,7 @@ u8 *rtw_get_wps_attr(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_at
  *
  * Returns: the address of the specific WPS attribute content found, or NULL
  */
-u8 *rtw_get_wps_attr_content(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_content, uint *len_content)
+u8 *rtw_get_wps_attr_content(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_content, uint *len_content, uint buf_content_len)
 {
 	u8 *attr_ptr;
 	u32 attr_len;
@@ -1176,11 +1176,16 @@ u8 *rtw_get_wps_attr_content(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8
 	attr_ptr = rtw_get_wps_attr(wps_ie, wps_ielen, target_attr_id, NULL, &attr_len);
 
 	if (attr_ptr && attr_len) {
-		if (buf_content)
-			_rtw_memcpy(buf_content, attr_ptr + 4, attr_len - 4);
+		u32 copy_len = attr_len - 4;
+
+		if (buf_content) {
+			if (buf_content_len < copy_len)
+				copy_len = buf_content_len;
+			_rtw_memcpy(buf_content, attr_ptr + 4, copy_len);
+		}
 
 		if (len_content)
-			*len_content = attr_len - 4;
+			*len_content = copy_len;
 
 		return attr_ptr + 4;
 	}

@@ -2517,7 +2517,7 @@ u8 process_p2p_provdisc_req(struct wifidirect_info *pwdinfo,  u8 *pframe, uint l
 
 	wpsie = rtw_get_wps_ie(frame_body + _PUBLIC_ACTION_IE_OFFSET_, len - _PUBLIC_ACTION_IE_OFFSET_, NULL, &wps_ielen);
 	if (wpsie) {
-		if (rtw_get_wps_attr_content(wpsie, wps_ielen, WPS_ATTR_CONF_METHOD , (u8 *) &uconfig_method, &attr_contentlen)) {
+		if (rtw_get_wps_attr_content(wpsie, wps_ielen, WPS_ATTR_CONF_METHOD , (u8 *) &uconfig_method, &attr_contentlen, sizeof(uconfig_method))) {
 			uconfig_method = be16_to_cpu(uconfig_method);
 			switch (uconfig_method) {
 			case WPS_CM_DISPLYA: {
@@ -2614,7 +2614,7 @@ u8 process_p2p_group_negotation_req(struct wifidirect_info *pwdinfo, u8 *pframe,
 		/*	If some device wants to do p2p handshake without sending prov_disc_req */
 		/*	We have to get peer_req_cm from here. */
 		if (_rtw_memcmp(pwdinfo->rx_prov_disc_info.strconfig_method_desc_of_prov_disc_req, "000", 3)) {
-			rtw_get_wps_attr_content(wpsie, wps_ielen, WPS_ATTR_DEVICE_PWID, (u8 *) &wps_devicepassword_id, &wps_devicepassword_id_len);
+			rtw_get_wps_attr_content(wpsie, wps_ielen, WPS_ATTR_DEVICE_PWID, (u8 *) &wps_devicepassword_id, &wps_devicepassword_id_len, sizeof(wps_devicepassword_id));
 			wps_devicepassword_id = be16_to_cpu(wps_devicepassword_id);
 
 			if (wps_devicepassword_id == WPS_DPID_USER_SPEC)

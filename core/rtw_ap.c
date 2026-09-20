@@ -3218,7 +3218,7 @@ static void update_bcn_wps_ie(_adapter *padapter)
 #if defined(CONFIG_INTERRUPT_BASED_TXBCN) || defined(CONFIG_PCI_HCI)
 	if ((pmlmeinfo->state & 0x03) == WIFI_FW_AP_STATE) {
 		u8 sr = 0;
-		rtw_get_wps_attr_content(pwps_ie_src,  wps_ielen, WPS_ATTR_SELECTED_REGISTRAR, (u8 *)(&sr), NULL);
+		rtw_get_wps_attr_content(pwps_ie_src,  wps_ielen, WPS_ATTR_SELECTED_REGISTRAR, (u8 *)(&sr), NULL, sizeof(sr));
 
 		if (sr) {
 			set_fwstate(pmlmepriv, WIFI_UNDER_WPS);
@@ -5313,7 +5313,7 @@ u16 rtw_ap_parse_sta_security_ie(_adapter *adapter, struct sta_info *sta, struct
 			if (mlme->wps_beacon_ie) {
 				u8 selected_registrar = 0;
 
-				rtw_get_wps_attr_content(mlme->wps_beacon_ie, mlme->wps_beacon_ie_len, WPS_ATTR_SELECTED_REGISTRAR, &selected_registrar, NULL);
+				rtw_get_wps_attr_content(mlme->wps_beacon_ie, mlme->wps_beacon_ie_len, WPS_ATTR_SELECTED_REGISTRAR, &selected_registrar, NULL, sizeof(selected_registrar));
 
 				if (!selected_registrar) {
 					RTW_INFO("selected_registrar is _FALSE , or AP is not ready to do WPS\n");
