@@ -786,7 +786,7 @@ static int rtw_cfg80211_clear_wps_sr_of_non_target_bss(_adapter *padapter, struc
 	wpsie = rtw_get_wps_ie(pnetwork->network.IEs + _FIXED_IE_LENGTH_
 		, pnetwork->network.IELength - _FIXED_IE_LENGTH_, NULL, &wpsielen);
 	if (wpsie && wpsielen > 0)
-		psr = rtw_get_wps_attr_content(wpsie, wpsielen, WPS_ATTR_SELECTED_REGISTRAR, &sr, NULL);
+		psr = rtw_get_wps_attr_content(wpsie, wpsielen, WPS_ATTR_SELECTED_REGISTRAR, &sr, NULL, sizeof(sr));
 
 	if (psr && sr) {
 		if (0)
@@ -6692,7 +6692,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	pwdinfo->tx_prov_disc_info.wps_config_method_request = WPS_CM_PUSH_BUTTON;
 
 	rtw_get_wps_ie(frame_body + _PUBLIC_ACTION_IE_OFFSET_, frame_body_len - _PUBLIC_ACTION_IE_OFFSET_, wpsie, &wpsielen);
-	rtw_get_wps_attr_content(wpsie, wpsielen, WPS_ATTR_DEVICE_PWID, (u8 *) &wps_devicepassword_id, &wps_devicepassword_id_len);
+	rtw_get_wps_attr_content(wpsie, wpsielen, WPS_ATTR_DEVICE_PWID, (u8 *) &wps_devicepassword_id, &wps_devicepassword_id_len, sizeof(wps_devicepassword_id));
 	wps_devicepassword_id = be16_to_cpu(wps_devicepassword_id);
 
 	switch (wps_devicepassword_id) {
@@ -9290,7 +9290,7 @@ static int rtw_cfg80211_set_probe_resp_wpsp2pie(struct net_device *net, char *bu
 
 			if (check_fwstate(pmlmepriv, WIFI_UNDER_WPS)) {
 				u8 sr = 0;
-				rtw_get_wps_attr_content(wps_ie,  wps_ielen, WPS_ATTR_SELECTED_REGISTRAR, (u8 *)(&sr), NULL);
+				rtw_get_wps_attr_content(wps_ie,  wps_ielen, WPS_ATTR_SELECTED_REGISTRAR, (u8 *)(&sr), NULL, sizeof(sr));
 
 				if (sr != 0)
 					RTW_INFO("%s, got sr\n", __func__);
@@ -9315,7 +9315,7 @@ static int rtw_cfg80211_set_probe_resp_wpsp2pie(struct net_device *net, char *bu
 			}
 
 			/* add PUSH_BUTTON config_method by driver self in wpsie of probe_resp at GO Mode */
-			puconfig_method = (u16 *)rtw_get_wps_attr_content(wps_ie, wps_ielen, WPS_ATTR_CONF_METHOD , NULL, &attr_contentlen);
+			puconfig_method = (u16 *)rtw_get_wps_attr_content(wps_ie, wps_ielen, WPS_ATTR_CONF_METHOD , NULL, &attr_contentlen, 0);
 			if (puconfig_method != NULL) {
 				/* struct registry_priv *pregistrypriv = &padapter->registrypriv; */
 				struct wireless_dev *wdev = padapter->rtw_wdev;
