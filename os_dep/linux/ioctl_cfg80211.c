@@ -1195,6 +1195,15 @@ check_bss:
 		#endif
 
 		if (check_fwstate(pmlmepriv, WIFI_MONITOR_STATE) != _TRUE) {
+		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+			/* cfg80211_connect_bss() was introduced in Linux 4.7. */
+			rtw_cfg80211_connect_result(pwdev, cur_network->network.MacAddress
+				, pmlmepriv->assoc_req + sizeof(struct rtw_ieee80211_hdr_3addr) + 2
+				, pmlmepriv->assoc_req_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 2
+				, pmlmepriv->assoc_rsp + sizeof(struct rtw_ieee80211_hdr_3addr) + 6
+				, pmlmepriv->assoc_rsp_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 6
+				, WLAN_STATUS_SUCCESS, GFP_ATOMIC);
+		#else
                         struct cfg80211_bss *bss;
                         bss = cfg80211_get_bss(pwdev->wiphy, NULL, cur_network->network.MacAddress, NULL, 0,
                                 IEEE80211_BSS_TYPE_ANY, IEEE80211_PRIVACY_ANY);
@@ -1214,6 +1223,7 @@ check_bss:
                                 , pmlmepriv->assoc_rsp_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 6
                                 , WLAN_STATUS_SUCCESS, GFP_ATOMIC);
 		#endif
+		#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0) */
                 }
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 11, 0) || defined(COMPAT_KERNEL_RELEASE)
 		RTW_INFO("pwdev->sme_state(a)=%d\n", pwdev->sme_state);
