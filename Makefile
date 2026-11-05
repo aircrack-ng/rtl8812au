@@ -1,3 +1,10 @@
+# objtool cannot validate this out-of-tree module on 7.1 with CONFIG_X86_KERNEL_IBT:
+# it reports a false "unannotated intra-function call" inside rtw_mp_cmd (the call
+# target is a legitimate local function, rtw_mp_cmd_hdl). Skip objtool for this
+# module so the driver can be built on those kernels.
+OBJECT_FILES_NON_STANDARD := y
+override delay-objtool :=
+
 ccflags-y += $(USER_EXTRA_CFLAGS) -fno-pie
 ccflags-y += -O3
 ccflags-y += -Wno-unused-variable
