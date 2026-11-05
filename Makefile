@@ -28,7 +28,7 @@ ccflags-y += -Wno-vla -g
 
 ccflags-y += -I$(src)/include -I$(srctree)/$(src)/include
 ccflags-y += -I$(src)/hal/phydm -I$(srctree)/$(src)/hal/phydm
-EXTRA_LDFLAGS += --strip-debug -O3
+ldflags-y += --strip-debug -O3
 
 ########################## WIFI IC ############################
 CONFIG_RTL8812A = y
