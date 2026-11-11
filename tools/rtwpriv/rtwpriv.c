@@ -24,7 +24,8 @@
 #include <unistd.h>		/* for close() */
 #include <sys/socket.h>		/* for "struct sockaddr" et al  */
 #include <sys/ioctl.h>		/* for ioctl() */
-#include <linux/wireless.h>	/* for "struct iwreq" et al */
+#include <net/if.h>		/* for "struct ifreq" */
+#include <linux/wireless.h>	/* for "struct iw_point" */
 
 #include "rtwpriv.h"
 
@@ -97,25 +98,31 @@ int wlan_ioctl_mp(
 		unsigned int BufferSize)
 {
 	int err;
-	struct iwreq iwr;
+	struct ifreq ifr;
+	struct iw_point iwp;
 
-	err = 0;
+	/*
+	 * The driver (rtw_ioctl_standard_wext_private) expects ifr_data to
+	 * point to a struct iw_point describing the command buffer, and
+	 * writes the reply back into that buffer.
+	 */
+	memset(&ifr, 0, sizeof(struct ifreq));
+	strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
 
-	memset(&iwr, 0, sizeof(struct iwreq));
-	strncpy(iwr.ifr_ifrn.ifrn_name, ifname, strlen(ifname));
+	iwp.pointer = pBuffer;
+	iwp.length = (unsigned short)BufferSize;
+	iwp.flags = 0;
+	ifr.ifr_data = (void *)&iwp;
 
-	iwr.u.data.pointer = pBuffer;
-	iwr.u.data.length = (unsigned short)BufferSize;
+	err = ioctl(skfd, RTW_IOCTL_MP, &ifr);
 
-	err = ioctl(skfd, RTW_IOCTL_MP, &iwr);
-
-	if (iwr.u.data.length == 0)
+	if (iwp.length == 0)
 		*(char*)pBuffer = 0;
 
 	return err;
 }
 
-#define BUF_SIZE 0x800
+#define BUF_SIZE 0x1000
 int main(int argc, char **argv)
 {
 	int i;
@@ -139,9 +146,16 @@ int main(int argc, char **argv)
 #endif
 
 	ifname = argv[1];
-	sprintf(input, "%s", argv[2]);
-	for (i=3; i<argc; i++)
-		sprintf(input, "%s %s", input, argv[i]);
+	input[0] = 0;
+	for (i = 2; i < argc; i++) {
+		if (strlen(input) + strlen(argv[i]) + 2 > BUF_SIZE) {
+			fprintf(stderr, "command too long\n");
+			return -EINVAL;
+		}
+		if (i > 2)
+			strcat(input, " ");
+		strcat(input, argv[i]);
+	}
 
 	DBG("ifname = %s\n", ifname);
 	DBG("input = %s\n", input);
@@ -156,6 +170,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Interface doesn't accept private ioctl...\n");
 		fprintf(stderr, "%s: %s\n", argv[2], strerror(errno));
 	} else {
+		input[BUF_SIZE - 1] = 0;
 		if (strlen(input) != 0)
 			printf("%-8.16s %s:%s\n", ifname, argv[2], input);
 	}
