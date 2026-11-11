@@ -12821,3 +12821,18 @@ int rtw_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 	return ret;
 }
 
+#if defined(CONFIG_WIRELESS_EXT) && \
+	(LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+/*
+ * Since 5.15, SIOCDEVPRIVATE..SIOCDEVPRIVATE+15 are no longer passed to
+ * ndo_do_ioctl but to ndo_siocdevprivate. Forward them to rtw_ioctl so
+ * the private interface (MP tools such as rtwpriv, Android priv cmds)
+ * keeps working.
+ */
+int rtw_siocdevprivate(struct net_device *dev, struct ifreq *rq,
+		       void __user *data, int cmd)
+{
+	return rtw_ioctl(dev, rq, cmd);
+}
+#endif
+
