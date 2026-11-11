@@ -1,5 +1,7 @@
 RtkMpTool.apk need to use "rtwpriv", 
 please frist to prepare build the rtwpriv and push to Android system.
+(rtwpriv sources are in tools/rtwpriv, build them with "make -C tools/rtwpriv".
+ On Linux, rtwpriv can also be used directly, e.g. "rtwpriv wlan0 mp_start".)
 
 Installation steps:
 1. adb push rtwpriv /system/bin/
