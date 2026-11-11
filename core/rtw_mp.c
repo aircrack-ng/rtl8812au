@@ -2366,6 +2366,12 @@ static u32 rtw_GetPSDData(PADAPTER pAdapter, u32 point)
 }
 
 /*
+ * Size of the reply buffer: the private ioctl reply is at most
+ * IW_PRIV_SIZE_MASK (2047) bytes.
+ */
+#define MP_PSD_BUF_SIZE 2047
+
+/*
  * pts	start_point_min		stop_point_max
  * 128	64			64 + 128 = 192
  * 256	128			128 + 256 = 384
@@ -2406,11 +2412,20 @@ u32 mp_query_psd(PADAPTER pAdapter, u8 *data)
 
 	i = psd_start;
 	while (i < psd_stop) {
+		u32 len = strlen(data);
+		int n;
+
 		if (i >= psd_pts)
 			psd_data = rtw_GetPSDData(pAdapter, i - psd_pts);
 		else
 			psd_data = rtw_GetPSDData(pAdapter, i);
-		sprintf(data + strlen(data), "%x ", psd_data);
+		n = snprintf(data + len, MP_PSD_BUF_SIZE - len, "%x ",
+			     psd_data);
+		if (n < 0 || n >= MP_PSD_BUF_SIZE - len) {
+			/* reply buffer full: drop the partial value and stop */
+			data[len] = '\0';
+			break;
+		}
 		i++;
 	}
 
