@@ -1911,11 +1911,21 @@ void SetPacketTx(PADAPTER padapter)
 	_rtw_memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
 	_rtw_memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
 	bmcast = IS_MCAST(pattrib->ra);
-	if (bmcast)
+	if (bmcast) {
 		pattrib->psta = rtw_get_bcmc_stainfo(padapter);
-	else
+		if (pattrib->psta == NULL) {
+			/* bcmc sta may have been freed (e.g. after a disconnect) */
+			rtw_init_bcmc_stainfo(padapter);
+			pattrib->psta = rtw_get_bcmc_stainfo(padapter);
+		}
+	} else
 		pattrib->psta = rtw_get_stainfo(&padapter->stapriv, get_bssid(&padapter->mlmepriv));
 
+	if (pattrib->psta == NULL) {
+		RTW_INFO("%s: no sta_info, abort MP TX\n", __func__);
+		pmp_priv->tx.stop = 1;
+		return;
+	}
 	pattrib->mac_id = pattrib->psta->cmn.mac_id;
 	pattrib->mbssid = 0;
 
