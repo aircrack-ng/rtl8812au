@@ -1474,6 +1474,9 @@ int rtw_mp_pretx_proc(PADAPTER padapter, u8 bStartTest, char *extra)
 	struct mp_priv *pmp_priv = &padapter->mppriv;
 	char *pextra = extra;
 
+	if (bStartTest)
+		rtw_mp_tx_first_frame(padapter);
+
 	switch (pmp_priv->mode) {
 
 	case MP_PACKET_TX:

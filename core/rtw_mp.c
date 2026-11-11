@@ -938,6 +938,7 @@ s32 mp_start_test(PADAPTER padapter)
 	s32 res = _SUCCESS;
 
 	padapter->registrypriv.mp_mode = 1;
+	pmppriv->first_tx_after_start = _TRUE;
 
 	init_mp_data(padapter);
 #ifdef CONFIG_RTL8814A
@@ -2069,6 +2070,35 @@ void SetPacketTx(PADAPTER padapter)
 	Rtw_MPSetMacTxEDCA(padapter);
 exit:
 	return;
+}
+
+/*
+ * The first frame sent after mp_start (which re-initializes the chip)
+ * never goes on air. Send a dummy frame before the first MP TX, and wait
+ * for it, so that the requested number of frames is really transmitted
+ * and continuous TX modes start on the first try.
+ */
+void rtw_mp_tx_first_frame(PADAPTER padapter)
+{
+	struct mp_priv *pmp_priv = &padapter->mppriv;
+	u32 count = pmp_priv->tx.count;
+	int i;
+
+	if (!pmp_priv->first_tx_after_start)
+		return;
+	pmp_priv->first_tx_after_start = _FALSE;
+
+	pmp_priv->tx.stop = 0;
+	pmp_priv->tx.count = 1;
+	SetPacketTx(padapter);
+	/* the TX thread sets tx.stop when it is done */
+	for (i = 0; i < 50 && !pmp_priv->tx.stop; i++)
+		rtw_msleep_os(2);
+	if (!pmp_priv->tx.stop) {
+		pmp_priv->tx.stop = 1;
+		rtw_msleep_os(5);
+	}
+	pmp_priv->tx.count = count;
 }
 
 void SetPacketRx(PADAPTER pAdapter, u8 bStartRx, u8 bAB)

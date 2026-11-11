@@ -324,6 +324,7 @@ struct mp_priv {
 	u32 pktInterval;
 	u32 pktLength;
 	struct mp_tx tx;
+	u8 first_tx_after_start; /* see rtw_mp_tx_first_frame() */
 
 	/* Rx Section */
 	u32 rx_bssidpktcount;
@@ -680,6 +681,7 @@ void	SetCarrierSuppressionTx(PADAPTER pAdapter, u8 bStart);
 void	PhySetTxPowerLevel(PADAPTER pAdapter);
 void	fill_txdesc_for_mp(PADAPTER padapter, u8 *ptxdesc);
 void	SetPacketTx(PADAPTER padapter);
+void	rtw_mp_tx_first_frame(PADAPTER padapter);
 void	SetPacketRx(PADAPTER pAdapter, u8 bStartRx, u8 bAB);
 void	ResetPhyRxPktCount(PADAPTER pAdapter);
 u32	GetPhyRxPktReceived(PADAPTER pAdapter);
